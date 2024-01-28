@@ -1,0 +1,7 @@
+name: CountrySimCore
+version: '${project.version}'
+main: me.sialim.countrysimcore.CountrySimCore
+api-version: '1.20'
+commands:
+  eco:
+    description: Economy management.
