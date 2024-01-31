@@ -25,10 +25,12 @@ public class PortCommand implements CommandExecutor {
         if (commandSender instanceof Player p) { // Check if command sender is a player.
             if (args.length >= 3) {
                 Player t = Bukkit.getPlayer(args[1]);
-                double value;
+                int quantity;
+                int level;
 
                 try {
-                    value = Double.parseDouble (args[2]);
+                    quantity = Integer.parseInt (args[2]);
+                    level = Integer.parseInt(args[3]);
                 } catch (NumberFormatException e) {
                     p.sendMessage("Invalid value provided.");
                     return true;
@@ -39,7 +41,7 @@ public class PortCommand implements CommandExecutor {
                     return true;
                 }
 
-                performEcoAction(p, t, args[0], value);
+                performPortAction(p, t, args[0], quantity, level);
             }
         } else {
 
@@ -51,39 +53,25 @@ public class PortCommand implements CommandExecutor {
         return true;
     }
 
-    private void performEcoAction (Player sender, Player target, String action, double value) {
+    private void performPortAction (Player sender, Player target, String action, int value, int level) {
         if(sender.hasPermission("cs.economy.towers.ports")) {
+            Ports ports = new Ports(sender, dataConfig, eco); //ports <set/add/take> <target> <amount> <level>
             switch (action.toLowerCase()) {
-                case "set": //ports set target value
-                    eco.setBalance(target, value);
-                    sender.sendMessage(ChatColor.GREEN + "Successfully set "
-                            + target.getName() + "'s account balance: " + eco.getBalance(target));
-                    break;
-                case "add": //ports add target value
+                case "add": //ports add target value level
+                    ports.addTower(target, value, level);
                     eco.addBalance(target, value);
-                    sender.sendMessage(ChatColor.GREEN + "Successfully added " + value
-                            + " to " + target.getName() + "'s account."
-                            + " New balance: " + eco.getBalance(target));
                     break;
-                case "take": //ports take target value
+                case "take": //ports take target value level
+                    ports.takeTower(target, value, level);
                     eco.takeBalance(target, value);
-                    sender.sendMessage(ChatColor.GREEN + "Successfully took " + value
-                            + " from " + target.getName() + "'s account."
-                            + " New balance: " + eco.getBalance(target));
                     break;
-                case "get": //ports get target
-                    sender.sendMessage(ChatColor.GREEN + target.getName() + "'s current balance: " + eco.getBalance(target));
-                    break;
-                case "check": //ports check target value
-                    if (eco.checkBalance(target, value)) {
-                        sender.sendMessage ( ChatColor.GREEN + target.getName() + " has " + value);
-                    } else {
-                        sender.sendMessage (ChatColor.GREEN +target.getName() + " does not have " + value);
-                    }
+                case "get": //ports get target value level
+                    sender.sendMessage(ChatColor.GREEN + target.getName() + "'s current ports: " + ports.getTowers(target));
+                    sender.sendMessage(ChatColor.GREEN + target.getName() + "'s current port income: " + ports.getTowerIncome(target));
                     break;
                 default:
                     sender.sendMessage(ChatColor.RED + "Invalid action. " +
-                            "Usage: /eco <set/add/take/get> <player> <value>");
+                            "Usage: /eco <set/add/take/get> <player> <value> <level>");
             }
         }
     }
